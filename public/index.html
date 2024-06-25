@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat Application</title>
+  <style>
+    /* Basic styles for the chat interface */
+    body { font-family: Arial, sans-serif; }
+    #chat { margin: 20px; }
+    #messages { list-style: none; padding: 0; }
+    #messages li { padding: 8px; margin-bottom: 10px; border-bottom: 1px solid #ddd; }
+    #messageInput { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div id="chat">
+    <ul id="messages"></ul>
+    <form id="messageForm">
+      <input id="username" type="text" placeholder="Username" required>
+      <input id="messageInput" type="text" placeholder="Type a message" required>
+      <button type="submit">Send</button>
+    </form>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    // Display previous messages
+    socket.on('previousMessages', (messages) => {
+      const messagesList = document.getElementById('messages');
+      messages.forEach((message) => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${message.username}: ${message.message}`;
+        messagesList.appendChild(listItem);
+      });
+    });
+
+    // Display new messages
+    socket.on('message', (message) => {
+      const messagesList = document.getElementById('messages');
+      const listItem = document.createElement('li');
+      listItem.textContent = `${message.username}: ${message.message}`;
+      messagesList.appendChild(listItem);
+    });
+
+    // Send new message
+    const messageForm = document.getElementById('messageForm');
+    messageForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const messageInput = document.getElementById('messageInput').value;
+      socket.emit('sendMessage', { username, message: messageInput });
+      messageInput.value = '';
+    });
+  </script>
+</body>
+</html>
